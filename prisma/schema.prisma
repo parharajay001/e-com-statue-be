@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,78 +11,59 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
+  id        String   @id @default(cuid())
   name      String
-  role      Role      @default(USER)
+  email     String   @unique
+  password  String
+  role      String   @default("USER")
   orders    Order[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id          String    @id @default(uuid())
-  name        String
-  description String    @db.Text
-  price       Float
-  stock       Int
-  images      String    @db.Text // Store as JSON string
-  category    Category  @relation(fields: [categoryId], references: [id])
-  categoryId  String
-  orders      OrderItem[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Category {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model Order {
-  id            String      @id @default(uuid())
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
-  items         OrderItem[]
-  totalAmount   Float
-  status        OrderStatus @default(PENDING)
-  paymentId     String?
-  paymentStatus PaymentStatus @default(PENDING)
-  address       String
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  price         Float
+  stockQuantity Int
+  imageUrl      String?
+  category      Category    @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  orderItems    OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
 
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  user            User        @relation(fields: [userId], references: [id])
+  userId          String
+  items           OrderItem[]
+  status          String      @default("PENDING")
+  totalAmount     Float
+  shippingAddress String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
 model OrderItem {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   order     Order    @relation(fields: [orderId], references: [id])
   orderId   String
   product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int
   price     Float
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
